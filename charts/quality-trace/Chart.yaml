@@ -10,4 +10,4 @@ name: quality-trace
 sources:
 - https://github.com/intelops/quality-trace/tree/main/charts
 type: application
-version: 1.0.2
+version: 1.0.3
