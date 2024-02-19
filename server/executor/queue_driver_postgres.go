@@ -84,6 +84,7 @@ func (qd *PostgresQueueDriver) Start() {
 func (qd *PostgresQueueDriver) worker(conn *pgxpool.Conn) {
 	qd.log("listening for notifications")
 	_, err := conn.Exec(context.Background(), "listen "+pgChannelName)
+	qd.log("channel name = %v", pgChannelName  )
 	if err != nil {
 		qd.log("error listening for notifications: %s", err.Error())
 		return
