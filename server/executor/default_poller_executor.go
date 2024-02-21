@@ -96,6 +96,9 @@ func (pe DefaultPollerExecutor) traceDB(ctx context.Context) (tracedb.TraceDB, e
 func (pe DefaultPollerExecutor) ExecuteRequest(ctx context.Context, job *Job) (PollResult, error) {
 	log.Printf("[PollerExecutor] Test %s Run %d: ExecuteRequest", job.Test.ID, job.Run.ID)
 
+	// Debug statement to check if traceDB connection is established
+	log.Println("Trying to establish connection with traceDB...")
+
 	traceDB, err := pe.traceDB(ctx)
 	if err != nil {
 		log.Printf("[PollerExecutor] Test %s Run %d: GetDataStore error: %s", job.Test.ID, job.Run.ID, err.Error())
@@ -103,6 +106,8 @@ func (pe DefaultPollerExecutor) ExecuteRequest(ctx context.Context, job *Job) (P
 	}
 
 	if isFirstRequest(job) {
+		// Debug statement to indicate first request
+		log.Println("First request detected. Testing connection...")
 		err := pe.testConnection(ctx, traceDB, job)
 		if err != nil {
 			return PollResult{}, err
@@ -110,12 +115,17 @@ func (pe DefaultPollerExecutor) ExecuteRequest(ctx context.Context, job *Job) (P
 	}
 
 	traceID := job.Run.TraceID.String()
+	// Debug statement to print traceID being used
+	log.Printf("TraceID for this job: %s", traceID)
+
 	trace, err := traceDB.GetTraceByID(ctx, traceID)
 	if err != nil {
 		pe.emit(ctx, job, events.TracePollingIterationInfo(job.Test.ID, job.Run.ID, 0, job.EnqueueCount(), false, err.Error()))
 		log.Printf("[PollerExecutor] Test %s Run %d: GetTraceByID (traceID %s) error: %s", job.Test.ID, job.Run.ID, traceID, err.Error())
 		return PollResult{}, err
 	}
+	// Debug statement to indicate successful retrieval of trace
+	log.Println("Trace retrieved successfully.")
 
 	trace.ID = job.Run.TraceID
 	done, reason := pe.donePollingTraces(job, traceDB, trace)
